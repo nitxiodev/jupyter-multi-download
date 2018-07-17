@@ -7,6 +7,7 @@ Just a simple button to download multiple files at once from jupyter.
 - Add download.js to Tampermonkey:
   * Go to Tampermonkey button on right-top corner (usually) > Dashboard.
   * Press on '+' button and copy download.js content into it.
+  * Save it.
   
 # Configuration
 Current version will **only** work on localhost:8888 address. Therefore, if we have jupyter deployed in another url, it is necessary to change it by setting the corresponding @match tag in the header. For instance:
