@@ -13,4 +13,4 @@ Current version will **only** work on localhost:8888 address. Therefore, if we h
 - @match http://my-private-address.com:8888/* -> tampermonkey run the script only in this address.
 
 # Last notes
-This script has been tested using tampermonkey on Chromium 66 and Firefox Quantum 61 over Jupyter-notebook 5.6.0
+This script has been tested using tampermonkey on Chromium 66 and Firefox Quantum 61 with Jupyter-notebook 5.6.0
