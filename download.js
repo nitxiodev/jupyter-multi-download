@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jupyter multi-download button
 // @namespace    Jupyter++
-// @version      0.1
+// @version      0.2b
 // @description  Just a simple button to download multiple files at once.
 // @author       nitxiodev
 // @match        *://localhost:8888/*
@@ -16,7 +16,66 @@ $(function() {
     $('#ipython_notebook').find('a').append("<div style='display: inline-block;'>++</div>").css('font-family', "'Knewave', cursive").css('color', '#e40f0f');
     $('.dynamic-buttons').append($('<button title="Download all" aria-label="DownloadAll selected" class="downloadall-button btn btn-default btn-xs" style="display: none; border-color: #4f88d9; color: #4f88d9; font-weight:bold;" id="downloadall">Download all</button>'))
     var keyframes = '@keyframes pulse{ 0% {border-color: gainsboro} 100% {border-color: red}} .running2 {animation: pulse 3s infinite;}';
+    var ribbon = `
+	.ribbon {
+	  position: absolute;
+	  left: -5px; top: -5px;
+	  z-index: 1;
+	  overflow: hidden;
+	  width: 75px; height: 75px;
+	  text-align: right;
+	}
+	.ribbon span {
+	  font-size: 10px;
+	  font-weight: bold;
+	  color: #FFF;
+	  text-align: center;
+	  line-height: 20px;
+	  transform: rotate(-45deg);
+	  -webkit-transform: rotate(-45deg);
+	  width: 95px;
+	  display: block;
+	  background: #79A70A;
+	  background: linear-gradient(#F70505 0%, #D43D2C 100%);
+	  box-shadow: 0 3px 10px -5px rgba(0, 0, 0, 1);
+	  position: absolute;
+	  top: 12px; left: -24px;
+	}
+	.ribbon span::before {
+	  content: "";
+	  position: absolute; left: 0px; top: 100%;
+	  z-index: -1;
+	  border-left: 3px solid #D43D2C;
+	  border-right: 3px solid transparent;
+	  border-bottom: 3px solid transparent;
+	  border-top: 3px solid #D43D2C;
+	}
+	.ribbon span::after {
+	  content: "";
+	  position: absolute; right: 0px; top: 100%;
+	  z-index: -1;
+	  border-left: 3px solid transparent;
+	  border-right: 3px solid #D43D2C;
+	  border-bottom: 3px solid transparent;
+	  border-top: 3px solid #D43D2C;
+	}
+    `;
     $('<style type="text/css">' + keyframes + '</style>').appendTo($('head'));
+    $('<style type="text/css">' + ribbon + '</style>').appendTo($('head'));
+    $('#header').append('<div class="ribbon"><span>v0.2b</span></div>');
+    var pressed = false;
+
+    $('body').keydown(function (e) {
+        if (e.keyCode === 17) {  // ctrl
+            pressed = true;
+            $('#notebook_toolbar').find('.pull-right').append('<span id="keys" title="Ctrl key pressed!" class="btn btn-xs btn-default btn-upload" style="background-color: green;color: white;font-weight: bold;">K</span>');
+        }
+    }).keyup(function (e) {
+        if (e.keyCode === 17) {  // ctrl
+            pressed = false;
+            $('#keys').remove();
+        }
+    });
 
     // Check if we are in notebooks tab and refresh ajax elements accordingly
     if (current_tab == '#notebooks') {
@@ -29,6 +88,12 @@ $(function() {
                     var is_running = $(this).not('.running2').css('visibility');
                     if (is_running === 'visible') {
                         $(this).next().css('visibility', '');
+                    }
+                });
+                elem.on('mouseleave', function (e) {
+                    var input = $(e.currentTarget).find('input[type="checkbox"]');
+                    if (!input.is(':checked') && pressed) {
+                        input.click();
                     }
                 });
             }
@@ -69,6 +134,7 @@ $(function() {
     // Callback function to execute when mutations are observed
     var callback = function(mutationsList) {
         for(var mutation of mutationsList) {
+            console.log('MUTATION');
             if (mutation.type == 'childList') {
                 hide_new_button(parseInt($(targetNode).text()));
             }
