@@ -18,6 +18,7 @@ After that, go to the url where your jupyter is deployed, and reload the page.
 # Options
 With the focus on jupyter window:
 - Keep **Ctrl** pressed and hover the mouse through each file to make a multiple selection (v0.2b). 
+- Adding csv viewer support (experimental) (v0.4b). Restricted to comma separator (',').
 
 # Last notes
 This script has been tested using tampermonkey on Chromium 66 and Firefox Quantum 61 with Jupyter-notebook 5.6.0
