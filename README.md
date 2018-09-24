@@ -1,5 +1,5 @@
-# jupyter-multi-download
-Just a simple button to download multiple files at once from jupyter.
+# jupyter++
+Adds different functionality to *jupyter vanilla*, such as: download several files at once or view images/csv on browser tabs.
 
 # How to install
 - Download Tampermonkey for Google Chrome/Chromium or Mozilla Firefox.
