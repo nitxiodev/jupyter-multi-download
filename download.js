@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Jupyter multi-download button
+// @name         Jupyter++
 // @namespace    Jupyter++
-// @version      0.4b
+// @version      0.4.1b
 // @description  Just a simple button to download multiple files at once.
 // @author       nitxiodev
 // @match        *://localhost:8888/*
@@ -20,6 +20,7 @@ VERSION CHANGELOG - FEATURES:
  * v0.2.1b: bug fixed with ctrl+k.
  * v0.3b: Image viewer.
  * v0.4b: CSV viewer with scrollX.
+ * v0.4.1b: bug fixed with multi download option.
 */
 
 var is_image = function (name) {
@@ -78,7 +79,7 @@ function tabulate (main_selector, data, columns) {
     return table;
 }
 
-var VERSION = "0.4b";
+var VERSION = "0.4.1b";
 
 $(function() {
     window.focus();
@@ -181,6 +182,18 @@ border-top: 3px solid #D43D2C;
             var i = $(this).find('i');
             var id = href.split('/');
             var file_name = id[id.length - 1];
+
+            // Append download to /notebooks/ to force download
+            if (href.indexOf('/notebooks/') > 0) {
+                href = href.concat('/files?download=1');
+                anchor.attr('href', href);
+            } else {  // This isn't a notebook
+                // Replace /edit/ with /notebooks/ to force download
+                if (href.indexOf('/edit/') > 0) {
+                    href = href.replace('/edit/', '/notebooks/');
+                    anchor.attr('href', href);
+                }
+            }
 
             if (!i.hasClass('folder_icon') && !anchor.attr('download') && input.is(':checked')) {
                 anchor.attr('download', file_name);
