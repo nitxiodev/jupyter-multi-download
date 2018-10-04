@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jupyter++
 // @namespace    Jupyter++
-// @version      0.4.3b
+// @version      0.4.4b
 // @description  Just a simple button to download multiple files at once.
 // @author       nitxiodev
 // @match        *://localhost:8888/*
@@ -22,7 +22,8 @@ VERSION CHANGELOG - FEATURES:
  * v0.4b: CSV viewer with scrollX.
  * v0.4.1b: bug fixed with multi download option.
  * v0.4.2b: adding bootstrap to imageviewer with scroll option.
- * v0.4.3b: adding loading land page on csvviewer.
+ * v0.4.3b: adding loading land page on CSV viewer.
+ * v0.4.4b: bug fixed onload new window.
 */
 
 var is_image = function (name) {
@@ -35,7 +36,7 @@ var is_csv = function (name) {
 
 var simple_web = function(img) {
     return "<div class='container-fluid'> <div class='row'><div class='col-md-12'><h2 class='text-center' style='text-transform: uppercase;font-family: cursive;background-color: gainsboro;padding: 10px;' class='mb-2'> Image viewer </h2></div> </div> <div class='row' style='overflow: auto'> <div class='col-md-12'> <div class='p-3 text-center'> <img id='image' style='min-width: 50%' src='" + img + "'/></div></div> </div>  </div>"
-//     return "<html> <div style='text-align: center'> <div id='header' style='text-transform: uppercase;font-family: monospace;background-color: gainsboro;padding: 10px;margin-bottom: 2%;'> <h2> Image viewer </h2> </div> <img style='width: 50%' src='" + img + "'/> </div> <html>"
+    //     return "<html> <div style='text-align: center'> <div id='header' style='text-transform: uppercase;font-family: monospace;background-color: gainsboro;padding: 10px;margin-bottom: 2%;'> <h2> Image viewer </h2> </div> <img style='width: 50%' src='" + img + "'/> </div> <html>"
 };
 
 var simple_table = function() {
@@ -82,7 +83,7 @@ function tabulate (main_selector, data, columns) {
     return table;
 }
 
-var VERSION = "0.4.3b";
+var VERSION = "0.4.4b";
 
 $(function() {
     window.focus();
@@ -260,33 +261,32 @@ border-top: 3px solid #D43D2C;
             evt.preventDefault();
             href = href.replace('/edit/', '/notebooks/');
 
-            async function CSV() {
-                opened = window.open("", "_blank");
-                opened.document.head.innerHTML = " <head> <meta charset='utf-8'> <title> Jupyter::Table </title> <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.3.1/css/all.css'> <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css' crossorigin='anonymous'> <link rel='stylesheet' href='https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css'> </head>";
-                opened.document.body.style.cssText = "margin: 0";
+            opened = window.open("", "_blank");
+            opened.document.head.innerHTML = " <head> <meta charset='utf-8'> <title> Jupyter::Table </title> <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.3.1/css/all.css'> <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css' crossorigin='anonymous'> <link rel='stylesheet' href='https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css'> </head>";
+            opened.document.body.style.cssText = "margin: 0";
 
-                opened.onload = function () {
-                    this.document.body.innerHTML = '<div class="container-fluid"> <div class="row text-center"> <div class="col-md-12"><h2> Loading csv..... (may take several minutes) </h2> </div><div class="col-md-12"> <i class="fas fa-spinner fa-spin fa-3x" style="/* color: red; */"></i> </div> </div>';
+            // Wait for document is ready
+            $(opened).ready(function () {
+                opened.document.body.innerHTML = '<div class="container-fluid"> <div class="row text-center"> <div class="col-md-12"><h2> Loading csv..... (may take several minutes) </h2> </div><div class="col-md-12"> <i class="fas fa-spinner fa-spin fa-3x" style="/* color: red; */"></i> </div> </div>';
+                // Wait for loading csv.....
+                async function CSV() {
+                    return await d3.csv(href);
                 };
 
-                // Wait for loading csv.....
-                var csv = await d3.csv(href).then(function (data) {
-                    return data;
+                // Call csv
+                CSV().then(response => {
+                    // ... display table
+                    opened.document.body.innerHTML = simple_table();
+                    tabulate(opened.document.getElementById('container'), response, Object.keys(response[0]));
+                    $(opened.document.getElementById('maintable')).DataTable({
+                        "scrollX": true,
+                        "pagingType": "full_numbers"
+                    });
+                    $(opened.document.getElementsByClassName('dataTables_scroll')).addClass('mb-2');
                 });
+            });
 
-                // ... display table
-                opened.document.body.innerHTML = simple_table();
-                tabulate(opened.document.getElementById('container'), csv, Object.keys(csv[0]));
-                $(opened.document.getElementById('maintable')).DataTable({
-                    "scrollX": true,
-                    "pagingType": "full_numbers"
-                });
-                $(opened.document.getElementsByClassName('dataTables_scroll')).addClass('mb-2');
-                opened.document.close();
-            };
-
-            // Call csv
-            CSV();
+            opened.document.close();
         }
     });
 });
